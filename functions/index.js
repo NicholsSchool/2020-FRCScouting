@@ -45,6 +45,7 @@ app.post("/createTeamsInEvent", (req, res) => {
     var batch = db.batch();
     for(team of teams)
         batch.set(db.collection("Events").doc(eventKey).collection("Teams").doc(team), {
+            teamNum: team,
             matches : [],
             averages : getEmptyMatchData().gamePlay
         });
@@ -91,6 +92,20 @@ app.get("/getMatches", (req, res) => {
         console.error(err);
     })
 })
+
+app.get("/getAllTeams", (req, res) => {
+    getCurrentEvent()
+    .then((event) => {
+        return db.collection("Events").doc(event).collection("Teams").listDocuments()
+    })
+    .then(docs => {
+        var teams = [];
+        for(team of docs)
+            teams.push(team.id);
+        res.send(teams);
+    })
+})
+
 
 app.get("/getTeamsInMatch", (req, res) => {
     var match = req.query.match;
@@ -163,6 +178,16 @@ function getDataPointValues()
     }
 }
 
+function getDependentData()
+{
+    return {
+        teleop: {
+            rotation: 0,
+            position: 0
+        }
+    }
+}
+
 app.post("/saveData", (req, res) => {
     var data = req.body;
     getCurrentEvent()
@@ -218,10 +243,7 @@ function updateAverages(averages, newData, num)
     for(gamePeriod in averages)
         for(score in averages[gamePeriod])
         {
-            console.log("Loop: " + gamePeriod + "  " + score);
             var val = averages[gamePeriod][score] * (num - 1);
-            console.log("Val: " + val);
-            console.log("New: " + newData[gamePeriod][score]);
             val += Number(newData[gamePeriod][score]);
             averages[gamePeriod][score] = val/num;
         }
@@ -236,7 +258,7 @@ app.get("/getRanking", (req, res) => {
     var order = req.query.isReversed == "true" ? 'asc' : "desc";
     getCurrentEvent()
     .then((event) => {
-        if(numTeams == 0)
+        if(numTeams <= 0)
             return db.collection("Events").doc(event).collection("Teams").orderBy(path, order).get();
         else
             return db.collection("Events").doc(event).collection("Teams").orderBy(path, order).limit(numTeams).get();
@@ -254,6 +276,72 @@ app.get("/getRanking", (req, res) => {
     })
 })
 
+function calculateAllianceScore(allianceAverages)
+{
+    var points = getDataPointValues(); // Also used for looping through
+    var dependentData = getDependentData();
+    var allianceScore = 0;
+    for(gamePeriod in points)
+    {
+        for (teamAverage in allianceAverages)
+        {
+            //Adding average total score is unreliable because some tasks only require 1 out of 3 teams
+            if (gamePeriod == "totalScore") 
+                continue;
+            //If everything in this period is independent, just add the average score
+            if(!dependentData[gamePeriod])
+            {
+                allianceScore += teamAverage[gamePeriod].score;
+                continue;
+            }
+            for (action in teamAverage[gamePeriod])
+            {
+                //If this action is not a dependent action, then just add it to the score
+                if(!dependentData[gamePeriod][action])
+                    allianceScore += teamAverage[gamePeriod][action] * points[action];
+                else
+                    if(dependentData[gamePeriod][action] <= teamAverage[gamePeriod][action])
+                        dependentData = teamAverages[gamePeriod][action];
+            }
+        }
+    }
+
+    for(gamePeriod in dependentData)
+        for(action in dependentData[gamePeriod])
+            allianceScore += dependentData[gamePeriod][action] * points[gamePeriod][action];
+    return allianceScore
+
+}
+
+app.get("/getWinner", (req, res) => {
+    // var blue = req.query.blue;
+    // var red = req.query.red;
+    getCurrentEvent()
+    .then((event) => {
+        var test = ["2095", "6431"];
+        return db.collection("Events").doc(event).collection("Teams").where('teamNum', 'in', test ).get();
+    })
+    .then((snap) => {
+        var data = [];
+        var allianceAverages = []
+       snap.forEach(doc => {
+           allianceAverages.push(doc.data().averages);
+        
+           data.push([doc.id, info]);
+       })
+        console.log(data);
+       res.send(data);
+    })
+    .catch((err) => {
+        console.log(err);
+        res.send(err);
+    })
+    
+})
+
+
+//One improvement I think could be made to this method is returning the doc,
+// db.collection("Events").doc(event), rather than just the string name of it
 async function getCurrentEvent(){
 
     return db.collection("MetaData").doc("CurrentEvent").get()

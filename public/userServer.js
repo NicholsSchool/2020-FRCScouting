@@ -5,6 +5,13 @@ async function getCurrentEvent()
     })
 }
 
+async function getAllTeams()
+{
+    return $.get('/getAllTeams', (teams) => {
+        return teams;
+    })
+}
+
 async function getMatches() {
     return $.get('/getMatches', (matches) => {
         return matches;
