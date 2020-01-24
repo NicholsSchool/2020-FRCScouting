@@ -1,19 +1,68 @@
+var highlightedTeams = [];
 document.addEventListener("DOMContentLoaded", event => {
-    getOptions();
+    setUpTeams();
+    setUpOptions();
     $("#ranking-num-teams-group").hide();
 
     $("#num-teams-check").on("click", function() {
         $(this).is(':checked') ? $("#ranking-num-teams-group").hide() : $("#ranking-num-teams-group").show();
     })
 
+    $("#highlight-btn").on("click", function() {
+       var team =  $("#highlight-team option:selected").text();
+        $("#highlight-team option:selected").remove();
+       if(team.length > 6)
+            return;
+        var style = [team, $("#highlight-color").val()];
+        highlightedTeams.push(style)
+        $("tr").each(function() {
+            if($(this).children().eq(1).text() == team)
+                $(this).css("background-color", style[1]);
+        })
+
+        $("#highlight-key").append(`<div class="row my-3 justify-content-center">
+                    <div class="border col-1" style="background-color: ${style[1]}"></div>
+                    <div class="col-4"><h5> - ${team}</h5></div>
+                    <div class="col-1 ">
+                        <div data-team = "${team}"class="text-center delete-highlight btn btn-outline-danger">
+                            <i class="fas fa-times"></i>
+                        </div>
+                    </div> 
+        </div>`);
+        console.log(highlightedTeams);
+    })
+
     $("#get-btn").on("click", setRankedTable)
+
     $(document).on("click", ".delete-button", function() {
         $("#ranking-select").append(`<option>${$(this).attr('data-choice')}</option>`)
         $(this).parent().parent().remove();
     })
+
+    $(document).on("click", ".delete-highlight", function() {
+        var team = $(this).attr('data-team');
+        $("tr").each(function () {
+            if ($(this).children().eq(1).text() == team)
+                $(this).css("background-color", "");
+        })
+        for(i in highlightedTeams)
+            if(highlightedTeams[i][0] == team)
+                highlightedTeams.splice(i, 1);
+        $("#highlight-team").append(`<option>${team}</option>`);
+        $(this).parent().parent().remove();
+    })
 })
 
-function getOptions()
+function setUpTeams()
+{
+    getAllTeams()
+    .then((teams) => {
+        for(team of teams)
+            $("#highlight-team").append(`<option>${team}</option>`);
+    })
+}
+
+function setUpOptions()
 {
     getEmptyMatchData()
         .then((data) => {
@@ -51,7 +100,12 @@ function setRankedTable()
         var i = 1;
         for(info of data)
         {
-            table += `    <tr>
+            var color = ""
+            for(style of highlightedTeams)
+                if(style[0] == info[0])
+                    color = style[1];
+            
+            table += `    <tr style = "background-color: ${color}">
                         <th scope="row">${i}</th>
                         <td>${info[0]}</td>
                         <td>${info[1]}</td>
@@ -78,6 +132,5 @@ function makeTableCard(choice, table)
 
 function capitalize(str)
 {
-
     return str.charAt(0).toUpperCase() + str.slice(1);
 }

@@ -5,6 +5,13 @@ async function getCurrentEvent()
     })
 }
 
+async function getAllTeams()
+{
+    return $.get('/getAllTeams', (teams) => {
+        return teams;
+    })
+}
+
 async function getMatches() {
     return $.get('/getMatches', (matches) => {
         return matches;
@@ -40,5 +47,12 @@ function saveData()
         $.post('/saveData', data);
         reset();
         $("#main").hide();
+    })
+}
+
+async function getPrediction(blueAlliance, redAlliance){
+    console.log("Getting Prediction")
+    return $.get('/getWinner', {'blue': blueAlliance, 'red': redAlliance}, (prediction) => {
+        return prediction;
     })
 }
