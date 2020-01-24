@@ -49,3 +49,10 @@ function saveData()
         $("#main").hide();
     })
 }
+
+async function getPrediction(blueAlliance, redAlliance){
+    console.log("Getting Prediction")
+    return $.get('/getWinner', {'blue': blueAlliance, 'red': redAlliance}, (prediction) => {
+        return prediction;
+    })
+}

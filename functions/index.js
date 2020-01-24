@@ -181,9 +181,9 @@ function getDataPointValues()
 function getDependentData()
 {
     return {
-        teleop: {
-            rotation: 0,
-            position: 0
+        "teleop": {
+            "rotation": 0,
+            "position": 0
         }
     }
 }
@@ -283,54 +283,72 @@ function calculateAllianceScore(allianceAverages)
     var allianceScore = 0;
     for(gamePeriod in points)
     {
-        for (teamAverage in allianceAverages)
+        for (teamAverage of allianceAverages)
         {
             //Adding average total score is unreliable because some tasks only require 1 out of 3 teams
             if (gamePeriod == "totalScore") 
                 continue;
             //If everything in this period is independent, just add the average score
-            if(!dependentData[gamePeriod])
+            if( !(gamePeriod in dependentData))
             {
                 allianceScore += teamAverage[gamePeriod].score;
                 continue;
             }
+
             for (action in teamAverage[gamePeriod])
             {
+                if(action == "score")
+                    continue;
+                
                 //If this action is not a dependent action, then just add it to the score
-                if(!dependentData[gamePeriod][action])
-                    allianceScore += teamAverage[gamePeriod][action] * points[action];
+                console.log("A Testing Action: " + action + " in " + gamePeriod)
+                console.log(dependentData[gamePeriod])
+                if (!(action in dependentData[gamePeriod]))
+                    allianceScore += teamAverage[gamePeriod][action] * points[gamePeriod][action];
                 else
                     if(dependentData[gamePeriod][action] <= teamAverage[gamePeriod][action])
-                        dependentData = teamAverages[gamePeriod][action];
+                        dependentData[gamePeriod][action] = teamAverage[gamePeriod][action];
             }
         }
     }
 
     for(gamePeriod in dependentData)
         for(action in dependentData[gamePeriod])
+        {
+            console.log("Dependent Action: " + action + " in " + gamePeriod + " Final Val: " + dependentData[gamePeriod][action]);
             allianceScore += dependentData[gamePeriod][action] * points[gamePeriod][action];
+        }
+        
     return allianceScore
 
 }
 
+function getAllianceScore(allianceSnap){
+    var allianceAverages = []
+    allianceSnap.forEach(team => {
+        allianceAverages.push(team.data().averages);
+    })
+    return calculateAllianceScore(allianceAverages);
+}
+
 app.get("/getWinner", (req, res) => {
-    // var blue = req.query.blue;
-    // var red = req.query.red;
+    var blueAlliance = req.query.blue;
+    var redAlliance = req.query.red;
+    var blueScore = 0;
+    var redScore = 0;
+    var teamsRef;
     getCurrentEvent()
     .then((event) => {
-        var test = ["2095", "6431"];
-        return db.collection("Events").doc(event).collection("Teams").where('teamNum', 'in', test ).get();
+        teamsRef = db.collection("Events").doc(event).collection("Teams");
+        return teamsRef.where('teamNum', 'in', blueAlliance ).get();
     })
-    .then((snap) => {
-        var data = [];
-        var allianceAverages = []
-       snap.forEach(doc => {
-           allianceAverages.push(doc.data().averages);
-        
-           data.push([doc.id, info]);
-       })
-        console.log(data);
-       res.send(data);
+    .then((alliance) => {
+        blueScore = getAllianceScore(alliance);
+        return teamsRef.where('teamNum', 'in', redAlliance).get();
+    })
+    .then((alliance) => {
+        redScore = getAllianceScore(alliance);
+        res.send({"blue": blueScore, "red": redScore});
     })
     .catch((err) => {
         console.log(err);
