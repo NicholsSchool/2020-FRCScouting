@@ -133,13 +133,15 @@ function getEmptyMatchData()
         gamePlay: {
             auto: {
                 "line": 0,
-                "high": 0,
-                "low": 0,
+                "threes": 0,
+                "twos":0,
+                "ones":0,
                 "score": 0,
             },
             teleop: {
-                "high": 0,
-                "low": 0,
+                "threes": 0,
+                "twos": 0,
+                "ones": 0,
                 "rotation": 0,
                 "position": 0,
                 "score": 0
@@ -161,12 +163,14 @@ function getDataPointValues()
     return {
         auto: {
             "line": 5,
-            "high": 4,
-            "low": 2,
+            "threes": 6,
+            "twos": 4,
+            "ones": 2,
         },
         teleop: {
-            "high": 2,
-            "low": 1,
+            "threes": 3,
+            "twos": 2,
+            "ones": 1,
             "rotation": 10,
             "position": 20,
         },
