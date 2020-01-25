@@ -198,7 +198,6 @@ app.post("/saveData", (req, res) => {
             .then(teamDoc => {
                var teamData = teamDoc.data();
                var gamePlay = convertToProperData(data.gamePlay);
-               console.log(teamData);
                teamData.matches.push(gamePlay);
                var newAverages = updateAverages(teamData.averages, gamePlay, teamData.matches.length);
                transaction.update(teamRef, {matches: teamData.matches, averages: newAverages});
@@ -282,14 +281,13 @@ function calculateAllianceScore(allianceAverages)
     var dependentData = getDependentData();
     var allianceScore = 0;
     for(gamePeriod in points)
-    {
         for (teamAverage of allianceAverages)
         {
             //Adding average total score is unreliable because some tasks only require 1 out of 3 teams
             if (gamePeriod == "totalScore") 
                 continue;
             //If everything in this period is independent, just add the average score
-            if( !(gamePeriod in dependentData))
+            if(!(gamePeriod in dependentData))
             {
                 allianceScore += teamAverage[gamePeriod].score;
                 continue;
@@ -301,8 +299,6 @@ function calculateAllianceScore(allianceAverages)
                     continue;
                 
                 //If this action is not a dependent action, then just add it to the score
-                console.log("A Testing Action: " + action + " in " + gamePeriod)
-                console.log(dependentData[gamePeriod])
                 if (!(action in dependentData[gamePeriod]))
                     allianceScore += teamAverage[gamePeriod][action] * points[gamePeriod][action];
                 else
@@ -310,14 +306,10 @@ function calculateAllianceScore(allianceAverages)
                         dependentData[gamePeriod][action] = teamAverage[gamePeriod][action];
             }
         }
-    }
 
     for(gamePeriod in dependentData)
         for(action in dependentData[gamePeriod])
-        {
-            console.log("Dependent Action: " + action + " in " + gamePeriod + " Final Val: " + dependentData[gamePeriod][action]);
             allianceScore += dependentData[gamePeriod][action] * points[gamePeriod][action];
-        }
         
     return allianceScore
 
