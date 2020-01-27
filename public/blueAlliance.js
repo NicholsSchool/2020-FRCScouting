@@ -16,8 +16,6 @@ function createEvent(eventData)
     $.post("/createEvent", {"eventData": eventData, "key":currentEventKey });
 }
 
-
-
 function createMatchesInEvent(matchData, key)
 {
     console.log("Creating Matches")

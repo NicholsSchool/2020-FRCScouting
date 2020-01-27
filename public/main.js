@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", event =>{
             $("#" + id).text(val - 1);
     })
     setUpEvent();
+    $("#submit-btn").on("click", saveData);
 })
 
 function setUpEvent()

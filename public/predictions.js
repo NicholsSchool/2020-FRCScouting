@@ -1,6 +1,22 @@
 document.addEventListener("DOMContentLoaded", event => {
     $("#prediction-card").hide();
     setUpChoices();
+    setUpMatches();
+    $("#match-select-btn").on("click", function() {
+        if ($("#match-select option:selected").text().length > 6)
+            return;
+        getTeamsInMatch($("#match-select option:selected").text())
+        .then(teams => {
+            console.log(teams);
+            $(".blue-select").each(function(index) {
+                $(this).val(teams.blue[index]);
+            })
+            $(".red-select").each(function (index) {
+                $(this).val(teams.red[index]);
+            }) 
+        })
+    })
+
     $("#predict-btn").on("click", function() {
         var blueAlliance = [];
         var redAlliance = [];
@@ -17,7 +33,6 @@ document.addEventListener("DOMContentLoaded", event => {
             else
                 redAlliance.push($(this).find(":selected").text());
         })
-        console.log("Error: " + error);
         if(!error)
             getPrediction(blueAlliance, redAlliance)
             .then(prediction => {
@@ -43,6 +58,15 @@ document.addEventListener("DOMContentLoaded", event => {
             })
     })
 })
+
+function setUpMatches()
+{
+    getMatches()
+    .then((matches) => {
+        for (match of matches)
+            $("#match-select").append(`<option>${match}</option>`);
+    })
+}
 
 function setUpChoices()
 {
