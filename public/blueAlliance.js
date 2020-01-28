@@ -1,8 +1,22 @@
 var currentEventKey;
+document.addEventListener("DOMContentLoaded", event => {
+    $("#loading-options").hide();
+    $(".fa-check").each(function() {
+        $(this).hide();
+    })
+    $('#create-event-btn').on("click", function() {
+        var event = $('#event-id').val();
+        if(event.length == 0)
+            return;
+        initalizeEvent(event);
+    })
+})
+
 //Possinly do "Set current event" first, and then have server getCurrentEvent for each set up
 // function, so you don't have to pass it in each time.
 
 function initalizeEvent(eventKey) {
+    $("#loading-options").show();
     currentEventKey = eventKey
     setBlueAllianceData("event/" + eventKey + "/simple", filterEvent, createEvent)
     setBlueAllianceData("event/" + eventKey + "/matches/simple", filterMatches, createMatchesInEvent)
@@ -13,19 +27,34 @@ function initalizeEvent(eventKey) {
 function createEvent(eventData)
 {
     console.log("Creating Event")
-    $.post("/createEvent", {"eventData": eventData, "key":currentEventKey });
+    $.post("/createEvent", {"eventData": eventData, "key":currentEventKey }, function(data, status) {
+        if (status != "success")
+            $("#error").text($("#error").text() + " Error in creating Event")
+        else
+            $("#event-check").show();
+    });
 }
 
 function createMatchesInEvent(matchData, key)
 {
     console.log("Creating Matches")
-    $.post("/createMatchesInEvent", {"matchData": matchData, "key": currentEventKey})
+    $.post("/createMatchesInEvent", { "matchData": matchData, "key": currentEventKey },function (data, status) {
+        if (status != "success")
+            $("#error").text($("#error").text() + " Error in creating Match")
+        else
+            $("#matches-check").show();
+    })
 }
 
 function createTeamsInEvent(teamData, key)
 {
     console.log("Creating Teams");
-    $.post("/createTeamsInEvent", { "teamData": teamData, "key" : currentEventKey})
+    $.post("/createTeamsInEvent", { "teamData": teamData, "key": currentEventKey }, function (data, status) {
+        if (status != "success")
+            $("#error").text($("#error").text() + " Error in creating Teams")
+        else
+            $("#teams-check").show();
+    })
 }
 function setCurrentEvent(eventKey) { 
     $.post("/setCurrentEvent", { "key": eventKey});
@@ -81,6 +110,7 @@ function setBlueAllianceData(urlSuffix, filter, send) {
                 .catch(err => {
                     console.log("Error");
                     console.log(err);
+                    $("#error").text($("#error").text() + "  " + err.responseText);
                 })
         })
 }
