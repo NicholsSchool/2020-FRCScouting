@@ -36,6 +36,8 @@ document.addEventListener("DOMContentLoaded", event => {
 
     $(document).on("click", ".delete-button", function() {
         $("#ranking-select").append(`<option>${$(this).attr('data-choice')}</option>`)
+        var queryId = $(this).parent().children().eq(0).attr('id');
+        queries[queryId]();  //Removes updatable part 
         $(this).parent().parent().remove();
     })
 
@@ -86,10 +88,13 @@ function setRankedTable()
         path = "averages.totalScore";
     var numTeams = !$("#num-teams-check").is(':checked') ? $("#ranking-num-teams").val() : 0;
     var isReversed = $("#reversed-check").is(':checked');
-    getRankings(path, numTeams, isReversed)
-    .then((data) => {
-        console.log(data);
-        var table = `<div><table class="table table-striped">
+    getUpdatableRankings(path, numTeams, isReversed, choice)
+}
+
+function makeTable(data, path)
+{
+    console.log(data);
+    var table = `<div id = "${path}"><table class="table table-striped">
                         <thead>
                             <tr>
                             <th scope="col">#</th>
@@ -97,24 +102,22 @@ function setRankedTable()
                             <th scope="col">Value</th>
                             </tr>
                         </thead><tbody>`
-        var i = 1;
-        for(info of data)
-        {
-            var color = ""
-            for(style of highlightedTeams)
-                if(style[0] == info[0])
-                    color = style[1];
-            
-            table += `    <tr style = "background-color: ${color}">
+    var i = 1;
+    for (info of data) {
+        var color = ""
+        for (style of highlightedTeams)
+            if (style[0] == info[0])
+                color = style[1];
+
+        table += `    <tr style = "background-color: ${color}">
                         <th scope="row">${i}</th>
                         <td>${info[0]}</td>
                         <td>${info[1]}</td>
                         </tr>`
-            i ++;
-        }
-        table += `</tbody></table></div>`
-        $("#rankings").before(makeTableCard(choice, table));
-    })
+        i++;
+    }
+    table += `</tbody></table></div>`
+    return table;
 }
 
 function makeTableCard(choice, table)
