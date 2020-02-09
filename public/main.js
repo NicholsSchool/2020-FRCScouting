@@ -40,12 +40,20 @@ function setUpTeamOptions(match)
     getTeamsInMatch(match)
     .then((teams) => {
         $("#team-choices").html("<option disabled selected value> -- select an option -- </option>");
+        $("#team-choices").removeClass("text-white");
+        $("#team-choices").css("background-color", "")
+
         for(team of teams.blue)
-            $("#team-choices").append(getTeamOption(team));
+            $("#team-choices").append(getTeamOption(team, "blue"));
         for(team of teams.red)
-            $("#team-choices").append(getTeamOption(team));
+            $("#team-choices").append(getTeamOption(team, "red"));
         // Resets and reveals the form when a new team is selected
         $("#team-choices").on("change", function () {
+            if ($("option:selected", this).hasClass("blue"))
+                $(this).css("background-color", "blue")
+            else
+                $(this).css("background-color", "red")
+            $(this).addClass("text-white");
             reset();
             $("#main").show();
         })
@@ -56,8 +64,8 @@ function getMatchOption(match) {
     return `<option>${match}</option>`;
 }
 
-function getTeamOption(team) {
-    return `<option>${team}</option>`
+function getTeamOption(team, color) {
+    return `<option class = "${color}">${team}</option>`
 }
 
 async function getInputtedData(){
