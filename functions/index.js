@@ -77,6 +77,17 @@ app.get("/getCurrentEvent", (req, res) =>{
     })
 })
 
+app.get("/getCurrentEventID", (req, res) => {
+    getCurrentEvent()
+    .then(event => {
+        res.send(event);
+    })
+    .catch(err => {
+        console.log(err);
+        res.send(err);
+    })
+})
+
 app.get("/getMatches", (req, res) => {
     getCurrentEvent()
     .then((event) => {

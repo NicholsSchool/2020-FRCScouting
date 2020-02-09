@@ -109,12 +109,21 @@
     <!-- TODO: Add SDKs for Firebase products that you want to use
      https://firebase.google.com/docs/web/setup#available-libraries -->
     <script src="/__/firebase/7.6.2/firebase-analytics.js"></script>
+    <script src="/__/firebase/7.7.0/firebase-firestore.js"></script>
 
-    <!-- Initialize Firebase -->
-    <script src="/__/firebase/init.js"></script>
-
+    <script>
+        // Your web app's Firebase configuration
+        var config = {
+            apiKey: "AIzaSyDsB2-CcAdXcaspb_4xukcSmp6G376YJDc",
+            authDomain: "frcscouting-65ef2.firebaseapp.com",
+            projectId: "frcscouting-65ef2",
+        };
+        firebase.initializeApp(config);
+         var db = firebase.firestore();
+    </script>
     <!-- Set Up Program Files-->
     <script src="header.js"></script>
     <script src="userServer.js"></script>
     <script src="rankings.js"></script>
+    <script src="rankingsUpdate.js"></script>
 </body>
