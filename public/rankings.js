@@ -111,7 +111,11 @@ function makeTable(data, path)
 
         table += `    <tr style = "background-color: ${color}">
                         <th scope="row">${i}</th>
-                        <td>${info[0]}</td>
+                        <td>
+                            <a href = "https://frcscouting-65ef2.firebaseapp.com/teamInfo.html?team=${info[0]}" target="_blank">
+                            ${info[0]}
+                            </a>
+                        </td>
                         <td>${info[1]}</td>
                         </tr>`
         i++;
