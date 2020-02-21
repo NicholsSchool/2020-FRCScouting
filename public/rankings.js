@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", event => {
         var style = [team, $("#highlight-color").val()];
         highlightedTeams.push(style)
         $("tr").each(function() {
-            if($(this).children().eq(1).text() == team)
+            if($(this).children().eq(1).text().trim() == team)
                 $(this).css("background-color", style[1]);
         })
 

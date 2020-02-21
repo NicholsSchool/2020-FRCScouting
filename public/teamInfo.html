@@ -45,10 +45,26 @@
                         Pick Team
                     </div>
                     <div class = "card-body">
-                        <select id = "team-select" class="custom-select">
+                        <select id = "team-select-1" class="team-select custom-select">
                             <option disabled selected value>Select Team</option>
                         </select>
                         <div class = "mt-3 btn btn-primary" id = "team-select-btn">Get Data</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center card">
+                    <div class="card-header">
+                        Pick Second Team to Compare
+                    </div>
+                    <div class="card-body">
+                        <select id = "team-select-2" class="team-select custom-select">
+                            <option disabled selected value>Select Team</option>
+                        </select>
+                        <div class="mt-3 btn btn-primary" id="second-team-select-btn">Get Data</div>
+                        <div id="second-team-select-error" class="invalid-feedback text-center" style = "display:none">
+                            <h6>Must Select Team 1 First</h6>
+                        </div>
                     </div>
                 </div>
             </div>
