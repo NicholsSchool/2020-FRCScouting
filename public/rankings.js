@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", event => {
         var style = [team, $("#highlight-color").val()];
         highlightedTeams.push(style)
         $("tr").each(function() {
-            if($(this).children().eq(1).text() == team)
+            if($(this).children().eq(1).text().trim() == team)
                 $(this).css("background-color", style[1]);
         })
 
@@ -111,7 +111,11 @@ function makeTable(data, path)
 
         table += `    <tr style = "background-color: ${color}">
                         <th scope="row">${i}</th>
-                        <td>${info[0]}</td>
+                        <td>
+                            <a href = "https://frcscouting-65ef2.firebaseapp.com/teamInfo.html?team=${info[0]}" target="_blank">
+                            ${info[0]}
+                            </a>
+                        </td>
                         <td>${info[1]}</td>
                         </tr>`
         i++;

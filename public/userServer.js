@@ -56,3 +56,9 @@ async function getPrediction(blueAlliance, redAlliance){
         return prediction;
     })
 }
+
+async function getTeamData(team) {
+    return $.get('/getTeamData', {'team': team}, (teamData) => {
+        return teamData;
+    })
+}

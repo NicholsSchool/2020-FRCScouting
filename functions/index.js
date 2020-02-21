@@ -117,7 +117,6 @@ app.get("/getAllTeams", (req, res) => {
     })
 })
 
-
 app.get("/getTeamsInMatch", (req, res) => {
     var match = req.query.match;
     getCurrentEvent()
@@ -126,6 +125,20 @@ app.get("/getTeamsInMatch", (req, res) => {
     })
     .then((match) => {
         res.send(match.data());
+    })
+    .catch((err) => {
+        console.error(err);
+    })
+})
+
+app.get("/getTeamData", (req, res) => {
+    var team = req.query.team;
+    getCurrentEvent()
+    .then(event => {
+        return db.collection("Events").doc(event).collection("Teams").doc(team).get()
+    })
+    .then(teamDataSnap => {
+        res.send(teamDataSnap.data())
     })
     .catch((err) => {
         console.error(err);
@@ -247,7 +260,6 @@ function convertToProperData(jsonData)
     }
     return jsonData;
 }
-
 
 function updateAverages(averages, newData, num)
 {
