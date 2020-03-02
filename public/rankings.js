@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", event => {
     $(document).on("click", ".delete-highlight", function() {
         var team = $(this).attr('data-team');
         $("tr").each(function () {
-            if ($(this).children().eq(1).text() == team)
+            if ($(this).children().eq(1).text().trim() == team)
                 $(this).css("background-color", "");
         })
         for(i in highlightedTeams)

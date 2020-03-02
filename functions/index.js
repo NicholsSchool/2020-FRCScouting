@@ -46,7 +46,7 @@ app.post("/createTeamsInEvent", (req, res) => {
     for(team of teams)
         batch.set(db.collection("Events").doc(eventKey).collection("Teams").doc(team), {
             teamNum: team,
-            matches : [],
+            matches : {},
             averages : getEmptyMatchData().gamePlay
         });
     batch.commit().then(() =>{
@@ -225,9 +225,14 @@ app.post("/saveData", (req, res) => {
            return transaction.get(teamRef)
             .then(teamDoc => {
                var teamData = teamDoc.data();
+                if ( teamData.matches.hasOwnProperty(data.match) )
+                {
+                    console.log("Match " + data.match + " for team " + data.team  + " Already scouted")
+                    return
+                }
                var gamePlay = convertToProperData(data.gamePlay);
-               teamData.matches.push(gamePlay);
-               var newAverages = updateAverages(teamData.averages, gamePlay, teamData.matches.length);
+               teamData.matches[data.match] = gamePlay;
+               var newAverages = updateAverages(teamData.averages, gamePlay, Object.keys(teamData.matches).length);
                transaction.update(teamRef, {matches: teamData.matches, averages: newAverages});
             })
         })
