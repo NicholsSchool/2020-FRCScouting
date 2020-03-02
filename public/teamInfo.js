@@ -50,8 +50,10 @@ function setUpTeamDataCharts(team, typeOfChart)
            var path = $(this).attr('id').split("-");
            var data = [];
            var labels = [];
-           for(index in teamMatchData) {
-               labels.push("" + index);
+           var num = 1;
+           var keys = Object.keys(teamMatchData).sort();
+           for (index of keys) {
+               labels.push("" + num++);
                 var temp = teamMatchData[index];
                 for (var i = 0; i < path.length; i++)
                     temp = temp[path[i]];
@@ -85,11 +87,6 @@ function createChart(ctx, data, id, labels, teamNum )
                         beginAtZero: true,
                     }
                 }],
-                xAxes: [{
-                    ticks: {
-                        max: data.length
-                    }
-                }]
             }
         }
     });
@@ -111,6 +108,9 @@ function addSecondDataset(ctx, data, id, labels, teamNum)
         charts[id].data.datasets.push(dataset)
     else 
         charts[id].data.datasets[1] = dataset
+    
+    if(labels.length > charts[id].data.labels.length)
+        charts[id].data.labels = labels;
     charts[id].update();
 }
 
