@@ -7,7 +7,7 @@ async function getCurrentEventID() {
 }
 
 async function getUpdatableRankings(path, numTeams, isReversed, choice){
-    var order = isReversed == true ? 'asc' : "desc";
+    var order = isReversed ? 'asc' : "desc";
     numTeams = Number(numTeams);
     getCurrentEventID()
     .then(eventID => {
@@ -27,6 +27,7 @@ async function getUpdatableRankings(path, numTeams, isReversed, choice){
                     var value = doc.data();
                     for (i = 0; i < p.length; i++)
                         value = value[p[i]];
+                    value = Math.round(value * 1000)/1000;
                     data.push([doc.id, value]);
                 });
                 if ($('#' + path).length == 0)
