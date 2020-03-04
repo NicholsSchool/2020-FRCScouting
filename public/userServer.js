@@ -5,6 +5,12 @@ async function getCurrentEvent()
     })
 }
 
+async function getCurrentEventID() {
+    return $.get('/getCurrentEventID', (eventID) => {
+        return eventID;
+    })
+}
+
 async function getAllTeams()
 {
     return $.get('/getAllTeams', (teams) => {

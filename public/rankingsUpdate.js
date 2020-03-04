@@ -1,11 +1,4 @@
 var queries = {};
-
-async function getCurrentEventID() {
-    return $.get('/getCurrentEventID', (eventID) => {
-        return eventID;
-    })
-}
-
 async function getUpdatableRankings(path, numTeams, isReversed, choice){
     var order = isReversed ? 'asc' : "desc";
     numTeams = Number(numTeams);
