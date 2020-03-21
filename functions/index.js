@@ -176,6 +176,10 @@ function getEmptyMatchData()
                 "park": 0,
                 "score": 0
             },
+            performance: {
+                "defense": 0,
+                "no_show": 0,
+            },
             totalScore: 0
         }
     }
@@ -202,6 +206,10 @@ function getDataPointValues()
             "climb": 25,
             "balance": 15,
             "park" : 5,
+        },
+        performance: {
+            "defense": 0,
+            "no_show": 0,
         }
     }
 }
