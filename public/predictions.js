@@ -3,9 +3,10 @@ document.addEventListener("DOMContentLoaded", event => {
     setUpChoices();
     setUpMatches();
     $("#match-select-btn").on("click", function() {
-        if ($("#match-select option:selected").text().length > 6)
+        var selectedMatch = $("#match-select option:selected").text();
+        if (isNaN( Number(selectedMatch) ))
             return;
-        getTeamsInMatch($("#match-select option:selected").text())
+        getTeamsInMatch(selectedMatch)
         .then(teams => {
             console.log(teams);
             $(".blue-select").each(function(index) {
@@ -22,24 +23,25 @@ document.addEventListener("DOMContentLoaded", event => {
         var redAlliance = [];
         var error = false;
         $(".team-select").each(function () {
-            if ($(this).find(":selected").text().length > 6)
+            var selectedTeam = $(this).find(":selected").text()
+            if ( isNaN( Number(selectedTeam) ) )
             {
                 $("#prediction-error").show();
                 error = true;
                 return false;
             }
             if($(this).parent().parent().hasClass("blue"))
-                blueAlliance.push($(this).find(":selected").text());
+                blueAlliance.push(selectedTeam);
             else
-                redAlliance.push($(this).find(":selected").text());
+                redAlliance.push(selectedTeam);
         })
         if(!error)
             getPrediction(blueAlliance, redAlliance)
             .then(prediction => {
                 $("#prediction-error").hide();
                 $("#prediction-card").show();
-                $("#blue-score").text(prediction.blue);
-                $("#red-score").text(prediction.red);
+                $("#blue-score").text(Math.round(prediction.blue * 1000) / 1000);
+                $("#red-score").text(Math.round(prediction.red * 1000) / 1000);
                 if(prediction.blue > prediction.red)
                 {
                     $('#winner').text("Blue")

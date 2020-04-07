@@ -8,9 +8,10 @@ document.addEventListener("DOMContentLoaded", event => {
     })
     $("#highlight-btn").on("click", () => {
         var team = $("#highlight-team option:selected").text();
-        $("#highlight-team option:selected").remove();
-        if (team.length > 6)
+        if ( isNaN( Number(team) ))
             return;
+        $("#highlight-team option:selected").remove();
+        
         var style = [team, $("#highlight-color").val()];
         highlightedTeams.push(style)
         $("tr").each(function () {

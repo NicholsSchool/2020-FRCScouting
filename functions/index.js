@@ -67,7 +67,7 @@ app.get("/getBlueAllianceKey", (req, res) =>{
 app.get("/getCurrentEvent", (req, res) =>{
     getCurrentEvent()
     .then((event) =>{
-       return db.collection("Events").doc(event).get();
+       return event.get();
     })
     .then((snap) => {
         res.send(snap.data().name);
@@ -80,7 +80,7 @@ app.get("/getCurrentEvent", (req, res) =>{
 app.get("/getCurrentEventID", (req, res) => {
     getCurrentEvent()
     .then(event => {
-        res.send(event);
+        res.send(event.id);
     })
     .catch(err => {
         console.log(err);
@@ -91,7 +91,7 @@ app.get("/getCurrentEventID", (req, res) => {
 app.get("/getMatches", (req, res) => {
     getCurrentEvent()
     .then((event) => {
-       return db.collection("Events").doc(event).collection("Matches").listDocuments()
+       return event.collection("Matches").listDocuments()
     })
     .then(docs => {
         var matches = [];
@@ -107,7 +107,7 @@ app.get("/getMatches", (req, res) => {
 app.get("/getAllTeams", (req, res) => {
     getCurrentEvent()
     .then((event) => {
-        return db.collection("Events").doc(event).collection("Teams").listDocuments()
+        return event.collection("Teams").listDocuments()
     })
     .then(docs => {
         var teams = [];
@@ -121,7 +121,7 @@ app.get("/getTeamsInMatch", (req, res) => {
     var match = req.query.match;
     getCurrentEvent()
     .then((event) => {
-        return db.collection("Events").doc(event).collection("Matches").doc(match).get()
+        return event.collection("Matches").doc(match).get()
     })
     .then((match) => {
         res.send(match.data());
@@ -135,7 +135,7 @@ app.get("/getTeamData", (req, res) => {
     var team = req.query.team;
     getCurrentEvent()
     .then(event => {
-        return db.collection("Events").doc(event).collection("Teams").doc(team).get()
+        return event.collection("Teams").doc(team).get()
     })
     .then(teamDataSnap => {
         res.send(teamDataSnap.data())
@@ -149,8 +149,8 @@ app.get("/getAllTeamData", (req, res) => {
     var order = 'desc';
     var path = "averages.totalScore"
     return getCurrentEvent()
-        .then(eventID => {
-            return db.collection("Events").doc(eventID).collection("Teams").orderBy(path, order).get();
+        .then(event => {
+            return event.collection("Teams").orderBy(path, order).get();
         })
         .then(snap => {
             var response = [];
@@ -244,7 +244,7 @@ app.post("/saveData", (req, res) => {
     var data = req.body;
     getCurrentEvent()
     .then((event) => {
-        let teamRef = db.collection("Events").doc(event).collection("Teams").doc(data.team);
+        let teamRef = event.collection("Teams").doc(data.team);
         db.runTransaction((transaction) => {
            return transaction.get(teamRef)
             .then(teamDoc => {
@@ -314,9 +314,9 @@ app.get("/getRanking", (req, res) => {
     getCurrentEvent()
     .then((event) => {
         if(numTeams <= 0)
-            return db.collection("Events").doc(event).collection("Teams").orderBy(path, order).get();
+            return event.collection("Teams").orderBy(path, order).get();
         else
-            return db.collection("Events").doc(event).collection("Teams").orderBy(path, order).limit(numTeams).get();
+            return event.collection("Teams").orderBy(path, order).limit(numTeams).get();
     })
     .then((snap) => {
         var data = [];
@@ -339,8 +339,9 @@ function calculateAllianceScore(allianceAverages)
     for(gamePeriod in points)
         for (teamAverage of allianceAverages)
         {
+            console.log(gamePeriod)
             //Adding average total score is unreliable because some tasks only require 1 out of 3 teams
-            if (gamePeriod == "totalScore") 
+            if (gamePeriod == "totalScore" || gamePeriod == "performance") 
                 continue;
             //If everything in this period is independent, just add the average score
             if(!(gamePeriod in dependentData))
@@ -387,7 +388,7 @@ app.get("/getWinner", (req, res) => {
     var teamsRef;
     getCurrentEvent()
     .then((event) => {
-        teamsRef = db.collection("Events").doc(event).collection("Teams");
+        teamsRef = event.collection("Teams");
         return teamsRef.where('teamNum', 'in', blueAlliance ).get();
     })
     .then((alliance) => {
@@ -412,7 +413,7 @@ async function getCurrentEvent(){
 
     return db.collection("MetaData").doc("CurrentEvent").get()
         .then(snap => {
-            return snap.data().event;
+            return db.collection("Events").doc(snap.data().event);
         })
 }
 

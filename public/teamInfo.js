@@ -4,16 +4,22 @@ document.addEventListener("DOMContentLoaded", event => {
     $("#charts").hide();
     setUp();
     $("#team-select-btn").on("click", () => {
+        var selectedTeam = $("#team-select-1 option:selected").text();
+        if(isNaN( Number(selectedTeam) ))
+            return;
         clearCharts();
-        setUpTeamDataCharts($("#team-select-1 option:selected").text(), createChart);
+        setUpTeamDataCharts(selectedTeam, createChart);
     })
     $("#second-team-select-btn").on("click", () => {
+        var selectedTeam = $("#team-select-2 option:selected").text();
+        if (isNaN( Number(selectedTeam) ))
+            return;
         //if charts is empty, don't make second chart
         if (Object.entries(charts).length === 0)
             $("#second-team-select-error").show();
         else{
             $("#second-team-select-error").hide();
-            setUpTeamDataCharts($("#team-select-2 option:selected").text(), addSecondDataset);
+            setUpTeamDataCharts(selectedTeam, addSecondDataset);
         }
     })
 })
