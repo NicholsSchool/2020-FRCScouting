@@ -2,6 +2,8 @@ const functions = require('firebase-functions');
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 const admin = require('firebase-admin');
 admin.initializeApp();
+
+// I use express for easier testing, writing, and implementation of functions
 const express = require('express')
 const app = express()
 
@@ -10,6 +12,11 @@ const db = admin.firestore();
 
 const blueAllianceAuth = functions.config().bluealliance.authkey;
 
+/**
+ * Used to create an event in the firebase storage
+ * 
+ * @param eventData - inside the request sent, this must contain the event's key and name
+ */
 app.post("/createEvent", (req, res) => {
     var event = req.body.eventData;
     db.collection("Events").doc(event.key).set({
@@ -20,6 +27,13 @@ app.post("/createEvent", (req, res) => {
     })
 })
 
+/**
+ * Used to create matches within an event in the firebase storage
+ * 
+ * @param matchData - inside the request sent, this must contain all the matches in the event 
+ *                    and the alliances within each match 
+ * @param key - inside the request sent, this must contain the event key 
+ */
 app.post("/createMatchesInEvent", (req, res) => {
     var matches = req.body.matchData;
     var eventKey = req.body.key;
@@ -35,10 +49,14 @@ app.post("/createMatchesInEvent", (req, res) => {
     .then(() => {
         res.send("done");
     })
-   
-    
 })
 
+/**
+ * Used to create and setup storage for each team in the event
+ * 
+ * @param teamData - inside the request sent, this must contain a list of all teams in the event
+ * @param key - inside the request sent, this must contain the event key
+ */
 app.post("/createTeamsInEvent", (req, res) => {
     var teams = req.body.teamData;
     var eventKey = req.body.key;
@@ -55,15 +73,28 @@ app.post("/createTeamsInEvent", (req, res) => {
    
 })
 
+/**
+ * Sets the app's current event to the given event
+ * 
+ * @param key - inside the request sent, this must contain the event key
+ */
 app.post("/setCurrentEvent", (req, res) => {
     //Possibly add code to confirm that the event inputted exists in current Event.
     db.collection("MetaData").doc("CurrentEvent").set({"event" : req.body.key});
 })
 
+/**
+ * Returns the blue alliance auth key
+ * @return the blue alliance auth key
+ */
 app.get("/getBlueAllianceKey", (req, res) =>{
    res.send(blueAllianceAuth);
 })
 
+/**
+ * Returns the name of the current event
+ * @return the name of the current event
+ */
 app.get("/getCurrentEvent", (req, res) =>{
     getCurrentEvent()
     .then((event) =>{
@@ -77,6 +108,11 @@ app.get("/getCurrentEvent", (req, res) =>{
     })
 })
 
+/**
+ * Returns the event key (ID) of the current event
+ * 
+ * @return the event key (ID) of the current event
+ */
 app.get("/getCurrentEventID", (req, res) => {
     getCurrentEvent()
     .then(event => {
@@ -88,6 +124,11 @@ app.get("/getCurrentEventID", (req, res) => {
     })
 })
 
+/**
+ * Returns a list of each match number within the current event
+ * 
+ * @return a list of each match number within the current event
+ */
 app.get("/getMatches", (req, res) => {
     getCurrentEvent()
     .then((event) => {
@@ -104,6 +145,11 @@ app.get("/getMatches", (req, res) => {
     })
 })
 
+/**
+ * Returns a list of all teams within the current event
+ * 
+ * @return a list of all teams within the current event
+ */
 app.get("/getAllTeams", (req, res) => {
     getCurrentEvent()
     .then((event) => {
@@ -117,6 +163,12 @@ app.get("/getAllTeams", (req, res) => {
     })
 })
 
+/**
+ * Returns the teams within a given match 
+ * 
+ * @param match - inside the request sent, this must contain the desired match's number
+ * @return the teams within a given match
+ */
 app.get("/getTeamsInMatch", (req, res) => {
     var match = req.query.match;
     getCurrentEvent()
@@ -131,6 +183,12 @@ app.get("/getTeamsInMatch", (req, res) => {
     })
 })
 
+/**
+ * Returns all the data for a given team in the current event
+ * 
+ * @param team - inside the request sent, this must contain the desired team's number
+ * @return all the data for a given team in the current event
+ */
 app.get("/getTeamData", (req, res) => {
     var team = req.query.team;
     getCurrentEvent()
@@ -145,6 +203,11 @@ app.get("/getTeamData", (req, res) => {
     })
 })
 
+/**
+ * Returns a list of the data for each and every team within the current event
+ * 
+ * @return a list of the data for each and every team within the current event
+ */
 app.get("/getAllTeamData", (req, res) => {
     var order = 'desc';
     var path = "averages.totalScore"
@@ -161,10 +224,20 @@ app.get("/getAllTeamData", (req, res) => {
         })
 })
 
+/**
+ * Returns an empty version of the storage object used for scouting data collection
+ * 
+ * @return an empty version of the storage object used for scouting data collection
+ */
 app.get('/getEmptyData', (req, res) => {
     res.send(getEmptyMatchData());
 })
 
+/**
+ * Returns an empty match data storage object
+ * 
+ * @return an empty match data storage object
+ */
 function getEmptyMatchData()
 {
     return {
@@ -202,6 +275,11 @@ function getEmptyMatchData()
     
 }
 
+/**
+ * Returns an object containing the point values for each task being scouted
+ * 
+ * @return an object containing the point values for each task being scouted
+ */
 function getDataPointValues()
 {
     return {
@@ -230,6 +308,11 @@ function getDataPointValues()
     }
 }
 
+/**
+ * Returns an object containing each task which only one team can accomplish per match
+ * 
+ * @return an object containing each task which only one team can accomplish per match
+ */
 function getDependentData()
 {
     return {
@@ -240,6 +323,11 @@ function getDependentData()
     }
 }
 
+/**
+ * Saves the scoutted data and updates the firebase database
+ * 
+ * @param data - inside the request sent, this must be the match data storage objected filled with scouted data
+ */
 app.post("/saveData", (req, res) => {
     var data = req.body;
     getCurrentEvent()
@@ -269,6 +357,13 @@ app.post("/saveData", (req, res) => {
     })
 })
 
+
+/**
+ * Converts the given match data storage object filled with scoutted data from being filled 
+ * with strings to being filled with the numeric values of those strings. 
+ * 
+ * @param {*} jsonData - a match data storage object filled with scoutted data 
+ */
 function convertToProperData(jsonData)
 {
     var pointValues = getDataPointValues();
@@ -290,6 +385,12 @@ function convertToProperData(jsonData)
     return jsonData;
 }
 
+/**
+ * Update's a teams averages with the new scoutted data 
+ * @param {*} averages - the current averages 
+ * @param {*} newData - the new scoutted data
+ * @param {*} num - the amount of matches now scoutted for the team 
+ */
 function updateAverages(averages, newData, num)
 {
     if(num == 1)
@@ -307,6 +408,14 @@ function updateAverages(averages, newData, num)
     return averages;
 }
 
+/**
+ * Returns a ranked list of teams and their average score for a given task
+ * 
+ * @param path - inside the request sent, this must be the path to where the task is stored
+ * @param numTeams - inside the request sent, this must be how many teams in the ranked list are desired
+ * @param isReversed - inside the request sent, this must be true for reversed, false otherwise
+ * @return a ranked list of teams and their average score for a given task
+ */
 app.get("/getRanking", (req, res) => {
     var path = req.query.path;
     var numTeams = Number(req.query.numTeams);
@@ -331,6 +440,10 @@ app.get("/getRanking", (req, res) => {
     })
 })
 
+/**
+ * Calculates the predicted score for an alliance of teams if they played together
+ * @param {*} allianceAverages - a list of the averages scores for each team in the alliance
+ */
 function calculateAllianceScore(allianceAverages)
 {
     var points = getDataPointValues(); // Also used for looping through
@@ -372,6 +485,12 @@ function calculateAllianceScore(allianceAverages)
 
 }
 
+/**
+ * Returns the predicted score for an alliance 
+ * @param {FirebaseFirestore.QuerySnapshot} allianceSnap - the query snapshot containing 
+ *                                          the data for the teams within the alliance
+ * @return the predicted score for an alliance
+ */
 function getAllianceScore(allianceSnap){
     var allianceAverages = []
     allianceSnap.forEach(team => {
@@ -380,6 +499,11 @@ function getAllianceScore(allianceSnap){
     return calculateAllianceScore(allianceAverages);
 }
 
+/**
+ * Returns the predicted scores for a match 
+ * @param blue - inside the request sent, this must be a list of teams in the blue alliance
+ * @param red -  inside the request sent, this must be a list of teams in the red alliance
+ */
 app.get("/getWinner", (req, res) => {
     var blueAlliance = req.query.blue;
     var redAlliance = req.query.red;
@@ -403,14 +527,9 @@ app.get("/getWinner", (req, res) => {
         console.log(err);
         res.send(err);
     })
-    
 })
 
-
-//One improvement I think could be made to this method is returning the doc,
-// db.collection("Events").doc(event), rather than just the string name of it
 async function getCurrentEvent(){
-
     return db.collection("MetaData").doc("CurrentEvent").get()
         .then(snap => {
             return db.collection("Events").doc(snap.data().event);
@@ -418,9 +537,3 @@ async function getCurrentEvent(){
 }
 
 exports.app = functions.https.onRequest(app);
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
-// exports.helloWorld = functions.https.onRequest((request, response) => {
-//  response.send("Hello from Firebase!");
-// });
