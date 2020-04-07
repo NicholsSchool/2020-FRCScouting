@@ -68,3 +68,10 @@ async function getTeamData(team) {
         return teamData;
     })
 }
+
+async function getAllTeamData()
+{
+    return $.get('/getAllTeamData', (allTeamData) => {
+        return allTeamData
+    })
+}

@@ -145,6 +145,22 @@ app.get("/getTeamData", (req, res) => {
     })
 })
 
+app.get("/getAllTeamData", (req, res) => {
+    var order = 'desc';
+    var path = "averages.totalScore"
+    return getCurrentEvent()
+        .then(eventID => {
+            return db.collection("Events").doc(eventID).collection("Teams").orderBy(path, order).get();
+        })
+        .then(snap => {
+            var response = [];
+            snap.forEach(doc => {
+                response.push([doc.id, doc.data()["averages"]])
+            })
+            res.send(response);
+        })
+})
+
 app.get('/getEmptyData', (req, res) => {
     res.send(getEmptyMatchData());
 })

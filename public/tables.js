@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", event => {
         $("#highlight-team").append(`<option>${team}</option>`);
         $(this).parent().parent().remove();
     })
-
+    $("#table-card").hide();
     $("#rankings-btn").on("click", () => {
         var paths = [];
         $(".data").each(function(index, value) {
@@ -49,6 +49,7 @@ document.addEventListener("DOMContentLoaded", event => {
                 paths.push($(this).attr('id'));
         })
         setUpTable(paths);
+        $("#table-card").show();
     })
 })
 
@@ -62,23 +63,24 @@ function setUpHighlightOptions()
 }
 
 function setUpTable(paths) {
-    getAllTeamsData()
-    .then(snap => {
+    getAllTeamData()
+    .then(allTeamData => {
         setUpTableHeaders(["#", "Team"].concat(paths));
         var index = 1;
-        snap.forEach(doc => {
-            var info = [doc.id];
+        for(data of allTeamData)
+        {
+            var info = [data[0]];
             for(path of paths)
             {
                 path = path.split(" ");
-                var value = doc.data()["averages"];
+                var value = data[1];
                 for (i = 0; i < path.length; i++)
                     value = value[path[i]];
                 info.push(Math.round(value * 1000)/1000);
             }
             teamData.push(info);
             setUpRow([index++].concat(info));
-        }); 
+        }
         $("#ranking-options").hide();
     })
 }
@@ -132,16 +134,6 @@ function setUpRow(info)
         row += `<td>${info[i]}</td>`
     row += `</tr>`
     $("#table-body").append(row)
-}
-
-async function getAllTeamsData()
-{
-    var order = 'desc';
-    var path = "averages.totalScore"
-    return getCurrentEventID()
-        .then(eventID => {
-            return db.collection("Events").doc(eventID).collection("Teams").orderBy(path, order).get();
-        })
 }
 
 function reorganizeChart(index)
