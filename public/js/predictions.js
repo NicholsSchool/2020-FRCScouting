@@ -1,11 +1,20 @@
 document.addEventListener("DOMContentLoaded", event => {
-    $("#prediction-card").hide();
+    $("#prediction-card").hide(); // Shouldn't appear until prediction is made
     setUpChoices();
     setUpMatches();
+
+    /**
+     * When this button is clicked, the team options will get filled with the teams
+     * in the currently selected match
+     */
     $("#match-select-btn").on("click", function() {
-        if ($("#match-select option:selected").text().length > 6)
+        var selectedMatch = $("#match-select option:selected").text();
+
+        if (isNaN( Number(selectedMatch) )) // If in the default selection, do nothing
             return;
-        getTeamsInMatch($("#match-select option:selected").text())
+
+        // Get teams in the match and place them accordingly 
+        getTeamsInMatch(selectedMatch)
         .then(teams => {
             console.log(teams);
             $(".blue-select").each(function(index) {
@@ -17,29 +26,47 @@ document.addEventListener("DOMContentLoaded", event => {
         })
     })
 
+    /**
+     * When this button is clicked, get all selected teams and display the prediction
+     */
     $("#predict-btn").on("click", function() {
         var blueAlliance = [];
         var redAlliance = [];
         var error = false;
+
+        // Go through each team option and add them to the lists
         $(".team-select").each(function () {
-            if ($(this).find(":selected").text().length > 6)
+            var selectedTeam = $(this).find(":selected").text()
+
+            // If an option is in its default state, show user an error stop
+            // adding teams to the lists
+            if ( isNaN( Number(selectedTeam) ) ) 
             {
                 $("#prediction-error").show();
                 error = true;
-                return false;
+                return;
             }
+
+            // Add each team to its respective alliance
             if($(this).parent().parent().hasClass("blue"))
-                blueAlliance.push($(this).find(":selected").text());
+                blueAlliance.push(selectedTeam);
             else
-                redAlliance.push($(this).find(":selected").text());
+                redAlliance.push(selectedTeam);
         })
-        if(!error)
-            getPrediction(blueAlliance, redAlliance)
+
+        if(error)
+            return;
+
+        /**
+         * Gets the predicted scores for the two alliance and sets the winner 
+         * accordingly
+         */
+        getPrediction(blueAlliance, redAlliance)
             .then(prediction => {
                 $("#prediction-error").hide();
                 $("#prediction-card").show();
-                $("#blue-score").text(prediction.blue);
-                $("#red-score").text(prediction.red);
+                $("#blue-score").text(Math.round(prediction.blue * 1000) / 1000);
+                $("#red-score").text(Math.round(prediction.red * 1000) / 1000);
                 if(prediction.blue > prediction.red)
                 {
                     $('#winner').text("Blue")
@@ -56,9 +83,13 @@ document.addEventListener("DOMContentLoaded", event => {
                     $('#winner').parent().css('background-color', 'mediumpurple')
                 }
             })
+        
     })
 })
 
+/**
+ * Sets up every match in the event as a choice to select
+ */
 function setUpMatches()
 {
     getMatches()
@@ -68,6 +99,9 @@ function setUpMatches()
     })
 }
 
+/**
+ * Sets up every team in the event as a choice to select in each of the 6 spots
+ */
 function setUpChoices()
 {
     getAllTeams()
