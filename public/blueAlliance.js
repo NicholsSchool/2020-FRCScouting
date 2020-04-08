@@ -12,9 +12,11 @@ document.addEventListener("DOMContentLoaded", event => {
     })
 })
 
-//Possinly do "Set current event" first, and then have server getCurrentEvent for each set up
-// function, so you don't have to pass it in each time.
-
+/**
+ * Initializes the event, matches, and team info in the server for the given event 
+ * @param {*} eventKey - the Event Key of the desired event
+ *                        (Found in the Blue Alliance URL for the event)
+ */
 function initalizeEvent(eventKey) {
     $("#loading-options").show();
     currentEventKey = eventKey
@@ -24,6 +26,10 @@ function initalizeEvent(eventKey) {
     setCurrentEvent(eventKey);
 }
 
+/**
+ * Sends the given filtered event data to the server to be stored
+ * @param {JSON} eventData - filtered event data from the blue alliance
+ */
 function createEvent(eventData)
 {
     console.log("Creating Event")
@@ -35,7 +41,11 @@ function createEvent(eventData)
     });
 }
 
-function createMatchesInEvent(matchData, key)
+/**
+ * Sends the given filtered match data to the server to be stored
+ * @param {JSON} matchData - filtered team data from the Blue Alliance
+ */
+function createMatchesInEvent(matchData)
 {
     console.log("Creating Matches")
     $.post("/createMatchesInEvent", { "matchData": matchData, "key": currentEventKey },function (data, status) {
@@ -46,7 +56,11 @@ function createMatchesInEvent(matchData, key)
     })
 }
 
-function createTeamsInEvent(teamData, key)
+/**
+ * Sends the given filtered team data to the server to be stored
+ * @param {JSON} teamData - filtered team data from the Blue Alliance
+ */
+function createTeamsInEvent(teamData)
 {
     console.log("Creating Teams");
     $.post("/createTeamsInEvent", { "teamData": teamData, "key": currentEventKey }, function (data, status) {
@@ -56,10 +70,22 @@ function createTeamsInEvent(teamData, key)
             $("#teams-check").show();
     })
 }
+
+/**
+ * Sets the current event being scoutted to the given event
+ * @param {String} eventKey - the Event Key of the desired event 
+ *                          (Found in the Blue Alliance URL for the event)
+ */
 function setCurrentEvent(eventKey) { 
     $.post("/setCurrentEvent", { "key": eventKey});
 }
 
+/**
+ * Returns an object containing each match and the alliances within each match
+ * based off data from the Blue Alliance match data query response 
+ * @param {JSON} response - the response from the blue alliance for match info in an event
+ * @return an object containing each match and the alliances within each match
+ */
 function filterMatches(response)
 {
     var matches = {};
@@ -78,21 +104,39 @@ function filterMatches(response)
     return matches;
 }
 
+/**
+ * Return a list of each team in the event from the given query response
+ * @param {JSON} response - the response from the blue alliance for team info in an event
+ * @return a list of each team in the event from the given query response
+ */
 function filterTeams(response) {
     var teams = [];
     for (team of response) 
         teams.push(team["team_number"]);
     return teams
 }
-
+/**
+ * Returns the event key and event name from a Blue Alliance event query response
+ * @param {JSON} response - the event query response from Blue Alliace
+ * @return the event key and event name from a Blue Alliance event query response
+ */
 function filterEvent(response)
 {
     return { "key": response.key, "name": response.name};
 }
 
+/**
+ * Gets certain data from Blue Alliance, filters it, and sends it to the server,
+ * using the inputted functions
+ * 
+ * @param {String} urlSuffix - the query for blue alliance
+ * @param {Function} filter - the function which filters the necessary data
+ * @param {Function} send - the function which sends the filtered data to the server
+ */
 function setBlueAllianceData(urlSuffix, filter, send) {
     $.get('/getBlueAllianceKey')
         .then(key => {
+            //Make query request
             $.ajax({
                 url: "https://www.thebluealliance.com/api/v3/" + urlSuffix,
                 headers: {
@@ -101,11 +145,11 @@ function setBlueAllianceData(urlSuffix, filter, send) {
                 method: 'GET',
             })
                 .then((response) => {
-                   return filter(response);
+                   return filter(response); // Filter response
                 })
                 .then((filteredData) =>{
-                    if(send)
-                        send(filteredData);
+                    if(send) // Check if a send function was inputted
+                        send(filteredData); // Send filtered data to server
                 })
                 .catch(err => {
                     console.log("Error");
