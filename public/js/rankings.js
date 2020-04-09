@@ -198,10 +198,19 @@ function makeTableCard(choice, table)
 }
 
 /**
- * Capitalizes the first letter of the given string
+ * Capitalizes the first letter of each word in the given string. 
+ * ( Words must be seperated by "_" )
  * @param {String} str - String to capitalize
  */
 function capitalize(str)
 {
-    return str.charAt(0).toUpperCase() + str.slice(1);
+    var words = str.split("_")
+    var ret = "";
+    for(var i = 0; i < words.length; i++)
+    {
+       ret += words[i].charAt(0).toUpperCase() + words[i].slice(1);
+       if(i != words.length - 1)
+            ret += "_"
+    }
+    return ret;
 }
