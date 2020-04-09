@@ -101,7 +101,7 @@ app.get("/getCurrentEvent", (req, res) =>{
        return event.get();
     })
     .then((snap) => {
-        res.set('Cache-Control', 'public, max-age=300, s-maxage' );
+        res.set('Cache-Control', 'public, max-age=300, s-maxage=600' );
         res.send(snap.data().name);
     })
     .catch((err) => {
@@ -139,7 +139,7 @@ app.get("/getMatches", (req, res) => {
         var matches = [];
         for(match of docs)
             matches.push(match.id);
-        res.set('Cache-Control', 'public, max-age=300, s-maxage');
+        res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
         res.send(matches);
     })
     .catch(err => {
@@ -161,7 +161,7 @@ app.get("/getAllTeams", (req, res) => {
         var teams = [];
         for(team of docs)
             teams.push(team.id);
-        res.set('Cache-Control', 'public, max-age=300, s-maxage');
+        res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
         res.send(teams);
     })
 })
