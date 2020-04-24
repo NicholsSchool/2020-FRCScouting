@@ -101,6 +101,7 @@ app.get("/getCurrentEvent", (req, res) =>{
        return event.get();
     })
     .then((snap) => {
+        res.set('Cache-Control', 'private, max-age=300, s-maxage=600' );
         res.send(snap.data().name);
     })
     .catch((err) => {
@@ -116,6 +117,7 @@ app.get("/getCurrentEvent", (req, res) =>{
 app.get("/getCurrentEventID", (req, res) => {
     getCurrentEvent()
     .then(event => {
+        res.set('Cache-Control', 'private, max-age=300, s-maxage=600');
         res.send(event.id);
     })
     .catch(err => {
@@ -138,6 +140,7 @@ app.get("/getMatches", (req, res) => {
         var matches = [];
         for(match of docs)
             matches.push(match.id);
+        res.set('Cache-Control', 'private, max-age=300, s-maxage=600');
         res.send(matches);
     })
     .catch(err => {
@@ -159,6 +162,7 @@ app.get("/getAllTeams", (req, res) => {
         var teams = [];
         for(team of docs)
             teams.push(team.id);
+        res.set('Cache-Control', 'private, max-age=300, s-maxage=600');
         res.send(teams);
     })
 })
@@ -230,6 +234,7 @@ app.get("/getAllTeamData", (req, res) => {
  * @return an empty version of the storage object used for scouting data collection
  */
 app.get('/getEmptyData', (req, res) => {
+    res.set('Cache-Control', 'private, max-age=300, s-maxage=600');
     res.send(getEmptyMatchData());
 })
 
