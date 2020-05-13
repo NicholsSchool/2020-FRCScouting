@@ -1,4 +1,5 @@
 const { app, db } = require('./server');
+const gameData = require("./data");
 
 /**
  * Used to create an event in the firebase storage
@@ -52,7 +53,7 @@ app.post("/createTeamsInEvent", (req, res) => {
         batch.set(db.collection("Events").doc(eventKey).collection("Teams").doc(team), {
             teamNum: team,
             matches: {},
-            averages: getEmptyMatchData().gamePlay
+            averages: gameData.getEmptyMatchData().gamePlay
         });
     batch.commit().then(() => {
         res.send("done");
