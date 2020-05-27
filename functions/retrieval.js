@@ -1,4 +1,4 @@
-const { app, db } = require('./server');
+const { app, db, admin } = require('./server');
 const gameData = require('./data');
 
 var methods = {};
@@ -9,22 +9,51 @@ methods.getCurrentEvent = async function() {
         })
 }
 
+methods.verifyAuthToken = async function(request) {
+    const tokenId = request.get('Authorization');
+    console.log("TokenId:");
+    console.log(tokenId);
+    return admin.auth().verifyIdToken(tokenId)
+}
+
+app.get("/testVerifyFunction", (req, res) => {
+    methods.verifyAuthToken(req)
+    .then((decoded) => {
+        console.log(decoded);
+        console.log("You are verified!");
+        res.send("Good job!");
+    })
+    .catch((err) => {
+        console.log("Boo, you are not verified!");
+        console.log(err);
+        res.send("Get lost");
+    })
+})
+
 /**
  * Returns the name of the current event
  * @return the name of the current event
  */
 app.get("/getCurrentEvent", (req, res) => {
-    methods.getCurrentEvent()
-        .then((event) => {
-            return event.get();
-        })
-        .then((snap) => {
-            res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
-            res.send(snap.data().name);
-        })
-        .catch((err) => {
-            console.error(err);
-        })
+    console.log("Getting current event");
+    methods.verifyAuthToken(req)
+    .then((decoded) => {
+        console.log("Decoded:")
+        console.log(decoded);
+        return methods.getCurrentEvent()
+    })
+    .then((event) => {
+        console.log("Got event query");
+        return event.get();
+    })
+    .then((snap) => {
+        console.log("sending event");
+        res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
+        res.send(snap.data().name);
+    })
+    .catch((err) => {
+        console.error(err);
+    })
 })
 
 /**
