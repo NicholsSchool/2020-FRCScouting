@@ -33,12 +33,22 @@ function initalizeEvent(eventKey) {
 function createEvent(eventData)
 {
     console.log("Creating Event")
-    $.post("/createEvent", {"eventData": eventData, "key":currentEventKey }, function(data, status) {
-        if (status != "success")
-            $("#error").text($("#error").text() + " Error in creating Event")
-        else
+    firebase.auth().currentUser.getIdToken(true)
+        .then((idToken) => {
+        return $.ajax({
+                url: "/createEvent",
+                headers: { 'Authorization': idToken },
+                data: { "eventData": eventData, "key": currentEventKey },
+                method: 'POST',
+            })
+        })
+        .then((response) => {
             $("#event-check").show();
-    });
+        })
+        .catch(err => {
+            console.log(err);
+            $("#error").text($("#error").text() + " Error in creating Event")
+        })
 }
 
 /**
@@ -48,12 +58,23 @@ function createEvent(eventData)
 function createMatchesInEvent(matchData)
 {
     console.log("Creating Matches")
-    $.post("/createMatchesInEvent", { "matchData": matchData, "key": currentEventKey },function (data, status) {
-        if (status != "success")
-            $("#error").text($("#error").text() + " Error in creating Match")
-        else
+    firebase.auth().currentUser.getIdToken(true)
+        .then((idToken) => {
+           return $.ajax({
+                url: "/createMatchesInEvent",
+                headers: { 'Authorization': idToken },
+                data: { "matchData": matchData, "key": currentEventKey },
+                method: 'POST',
+            })
+        })
+        .then((response) => {
             $("#matches-check").show();
-    })
+        })
+        .catch(err => {
+            console.log(err);
+            $("#error").text($("#error").text() + " Error in creating Matches")
+        })
+
 }
 
 /**
@@ -63,12 +84,22 @@ function createMatchesInEvent(matchData)
 function createTeamsInEvent(teamData)
 {
     console.log("Creating Teams");
-    $.post("/createTeamsInEvent", { "teamData": teamData, "key": currentEventKey }, function (data, status) {
-        if (status != "success")
-            $("#error").text($("#error").text() + " Error in creating Teams")
-        else
+    firebase.auth().currentUser.getIdToken(true)
+        .then((idToken) => {
+            return $.ajax({
+                url: "/createTeamsInEvent",
+                headers: { 'Authorization': idToken },
+                data: { "teamData": teamData, "key": currentEventKey },
+                method: 'POST',
+            })
+        })
+        .then((response) => {
             $("#teams-check").show();
-    })
+        })
+        .catch(err => {
+            console.log(err);
+            $("#error").text($("#error").text() + " Error in creating Teams")
+        })
 }
 
 /**
@@ -77,7 +108,20 @@ function createTeamsInEvent(teamData)
  *                          (Found in the Blue Alliance URL for the event)
  */
 function setCurrentEvent(eventKey) { 
-    $.post("/setCurrentEvent", { "key": eventKey});
+    firebase.auth().currentUser.getIdToken(true)
+        .then((idToken) => {
+            return $.ajax({
+                url: "/setCurrentEvent",
+                headers: { 'Authorization': idToken },
+                data: { "key": eventKey },
+                method: 'POST',
+            })
+        })
+
+        .catch(err => {
+            console.log(err);
+            $("#error").text($("#error").text() + " Error in setting event")
+        })
 }
 
 /**

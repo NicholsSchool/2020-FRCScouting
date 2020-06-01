@@ -3,6 +3,7 @@ const { app, db, functions } = require('./server');
 require("./setup");
 const retrieval = require("./retrieval");
 const gameData = require("./data");
+const verification = require("./verification");
 require("./predictions");
 
 const blueAllianceAuth = functions.config().bluealliance.authkey;
@@ -11,8 +12,16 @@ const blueAllianceAuth = functions.config().bluealliance.authkey;
  * Returns the blue alliance auth key
  * @return the blue alliance auth key
  */
-app.get("/getBlueAllianceKey", (req, res) =>{
-   res.send(blueAllianceAuth);
+app.get("/getBlueAllianceKey", (req, res) => {
+    verification.verifyAuthToken(req)
+    .then(decoded => {
+        res.send(blueAllianceAuth);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(401).send("Must be signed in to access blue alliance auth key");
+    })
+  
 })
 
 /**
@@ -22,31 +31,35 @@ app.get("/getBlueAllianceKey", (req, res) =>{
  */
 app.post("/saveData", (req, res) => {
     var data = req.body;
-    retrieval.getCurrentEvent()
+    verification.verifyAuthToken(req)
+    .then((decoded) => {
+        return retrieval.getCurrentEvent()
+    })
     .then((event) => {
         let teamRef = event.collection("Teams").doc(data.team);
-        db.runTransaction((transaction) => {
-           return transaction.get(teamRef)
-            .then(teamDoc => {
-               var teamData = teamDoc.data();
-                if ( teamData.matches.hasOwnProperty(data.match) )
-                {
-                    console.log("Match " + data.match + " for team " + data.team  + " Already scouted")
-                    return
-                }
-               var gamePlay = convertToProperData(data.gamePlay);
-               teamData.matches[data.match] = gamePlay;
-               var newAverages = updateAverages(teamData.averages, gamePlay, Object.keys(teamData.matches).length);
-               transaction.update(teamRef, {matches: teamData.matches, averages: newAverages});
-            })
-        })
-        .then((result) => {
-            res.send("done");
-        })
-        .catch((err) => {
-            console.error(err);
+        return db.runTransaction((transaction) => {
+            return transaction.get(teamRef)
+                .then(teamDoc => {
+                    var teamData = teamDoc.data();
+                    if (teamData.matches.hasOwnProperty(data.match)) {
+                        console.log("Match " + data.match + " for team " + data.team + " Already scouted")
+                        return
+                    }
+                    var gamePlay = convertToProperData(data.gamePlay);
+                    teamData.matches[data.match] = gamePlay;
+                    var newAverages = updateAverages(teamData.averages, gamePlay, Object.keys(teamData.matches).length);
+                    transaction.update(teamRef, { matches: teamData.matches, averages: newAverages });
+                })
         })
     })
+    .then((result) => {
+        res.send("done");
+    })
+    .catch((err) => {
+        console.error(err);
+        res.status(400).send("Error saving data");
+    })
+
 })
 
 
@@ -112,7 +125,11 @@ app.get("/getRanking", (req, res) => {
     var path = req.query.path;
     var numTeams = Number(req.query.numTeams);
     var order = req.query.isReversed == "true" ? 'asc' : "desc";
-    retrieval.getCurrentEvent()
+    
+    verification.verifyAuthToken(req)
+    .then((decoded) => {
+        return retrieval.getCurrentEvent()
+    })
     .then((event) => {
         if(numTeams <= 0)
             return event.collection("Teams").orderBy(path, order).get();
@@ -129,6 +146,9 @@ app.get("/getRanking", (req, res) => {
             data.push([doc.id, value]);
         });
         res.send(data);
+    })
+    .catch(err => {
+        res.status(400).send("Error in getting ranking");
     })
 })
 
