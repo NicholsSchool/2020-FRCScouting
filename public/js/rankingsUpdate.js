@@ -48,10 +48,16 @@ async function getUpdatableRankings(path, numTeams, isReversed, choice){
                     var newTable = makeTable(data, path)
                     $('#' + path).replaceWith(newTable);
                 }
+            }, function (error) {
+                console.log(error)
             })
+          
         // Store this query so that we can remove the updating of the table later 
         // if the user wants to remove the table
         queries[path] = query; 
         return query;
-    })   
+    })  
+    .catch(error => {
+        console.log(error);
+    }) 
 }
