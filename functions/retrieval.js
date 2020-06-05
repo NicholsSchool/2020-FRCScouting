@@ -3,26 +3,17 @@ const gameData = require('./data');
 const verification = require("./verification.js");
 
 var methods = {};
+
+/**
+ * Returns the DocuementReference of the current event the app is set to
+ * @return the DocuementReference of the current event the app is set to
+ */
 methods.getCurrentEvent = async function() {
     return db.collection("MetaData").doc("CurrentEvent").get()
         .then(snap => {
             return db.collection("Events").doc(snap.data().event);
         })
 }
-
-app.get("/testVerifyFunction", (req, res) => {
-    verification.verifyAuthToken(req)
-    .then((decoded) => {
-        console.log(decoded);
-        console.log("You are verified!");
-        res.send("Good job!");
-    })
-    .catch((err) => {
-        console.log("Boo, you are not verified!");
-        console.log(err);
-        res.send("Get lost");
-    })
-})
 
 /**
  * Returns the name of the current event
@@ -163,7 +154,7 @@ app.get("/getTeamData", (req, res) => {
 app.get("/getAllTeamData", (req, res) => {
     var order = 'desc';
     var path = "averages.totalScore"
-
+    //First we verify the user. If they aren't valid, the code skips to the catch()
     verification.verifyAuthToken(req)
         .then((decoded) => {
             return methods.getCurrentEvent()

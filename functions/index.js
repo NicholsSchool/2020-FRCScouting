@@ -13,6 +13,7 @@ const blueAllianceAuth = functions.config().bluealliance.authkey;
  * @return the blue alliance auth key
  */
 app.get("/getBlueAllianceKey", (req, res) => {
+    //First we verify the user. If they aren't valid, the code skips to the catch()
     verification.verifyAuthToken(req)
     .then(decoded => {
         res.send(blueAllianceAuth);
@@ -31,6 +32,7 @@ app.get("/getBlueAllianceKey", (req, res) => {
  */
 app.post("/saveData", (req, res) => {
     var data = req.body;
+    //First we verify the user. If they aren't valid, the code skips to the catch()
     verification.verifyAuthToken(req)
     .then((decoded) => {
         return retrieval.getCurrentEvent()
@@ -125,7 +127,7 @@ app.get("/getRanking", (req, res) => {
     var path = req.query.path;
     var numTeams = Number(req.query.numTeams);
     var order = req.query.isReversed == "true" ? 'asc' : "desc";
-    
+    //First we verify the user. If they aren't valid, the code skips to the catch()
     verification.verifyAuthToken(req)
     .then((decoded) => {
         return retrieval.getCurrentEvent()

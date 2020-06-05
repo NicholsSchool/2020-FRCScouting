@@ -9,6 +9,7 @@ const verification = require("./verification.js");
  */
 app.post("/createEvent", (req, res) => {
     var event = req.body.eventData;
+    //First we verify the user. If they aren't valid, the code skips to the catch()
     verification.verifyAuthToken(req)
         .then((decoded) => {
         return db.collection("Events").doc(event.key).set({
@@ -35,6 +36,7 @@ app.post("/createMatchesInEvent", (req, res) => {
     var matches = req.body.matchData;
     var eventKey = req.body.key;
     var batch = db.batch();
+    //First we verify the user. If they aren't valid, the code skips to the catch()
     verification.verifyAuthToken(req)
     .then(decoded => {
         for (match in matches) {
@@ -65,6 +67,7 @@ app.post("/createTeamsInEvent", (req, res) => {
     var teams = req.body.teamData;
     var eventKey = req.body.key;
     var batch = db.batch();
+    //First we verify the user. If they aren't valid, the code skips to the catch()
     verification.verifyAuthToken(req)
         .then(decoded => {
             for (team of teams)
@@ -91,6 +94,8 @@ app.post("/createTeamsInEvent", (req, res) => {
  */
 app.post("/setCurrentEvent", (req, res) => {
     //Possibly add code to confirm that the event inputted exists in current Event.
+    
+    //First we verify the user. If they aren't valid, the code skips to the catch()
     verification.verifyAuthToken(req)
     .then((decoded) => {
         db.collection("MetaData").doc("CurrentEvent").set({ "event": req.body.key });

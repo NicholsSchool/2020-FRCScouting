@@ -67,6 +67,7 @@ app.get("/getWinner", (req, res) => {
     var blueScore = 0;
     var redScore = 0;
     var teamsRef;
+    //First we verify the user. If they aren't valid, the code skips to the catch()
     verification.verifyAuthToken(req)
         .then((decoded) => {
             return retrieval.getCurrentEvent()
