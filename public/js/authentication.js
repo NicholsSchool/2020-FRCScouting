@@ -1,29 +1,30 @@
+/** Loads in the header to the page */
+$('#header').load("header.html", function () {
+    /**
+     * Handles the response whenever user state is changed
+     */
+    firebase.auth().onAuthStateChanged(user => {
+        if (user)
+            signInResponse()
+        else
+            signOutResponse();
+    })
+});
 
-document.addEventListener("DOMContentLoaded", event => {    
-    $("#content").hide();
-    
+
+document.addEventListener("DOMContentLoaded", event => {      
+    /**
+     * Sign in the user with a google sign in redirect whenever sign in button is clicked
+     */
     $(document).on("click", "#signIn", () => {
         firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
         .then(() => {
             var provider = new firebase.auth.GoogleAuthProvider();
             firebase.auth().signInWithRedirect(provider)
             firebase.auth().getRedirectResult().then(function (result) {
-                if (result.credential) {
-                    // This gives you a Google Access Token. You can use it to access the Google API.
-                    var token = result.credential.accessToken;
-                    // ...
-                }
-                // The signed-in user info.
-                var user = result.user;
+                // No need to do anything
             }).catch(function (error) {
-                // Handle Errors here.
-                var errorCode = error.code;
-                var errorMessage = error.message;
-                // The email of the user's account used.
-                var email = error.email;
-                // The firebase.auth.AuthCredential type that was used.
-                var credential = error.credential;
-                // ...
+                console.error(error)
             });
         })
         .catch( (error) => {
@@ -31,24 +32,20 @@ document.addEventListener("DOMContentLoaded", event => {
         });
     })
 
+    /**
+     * Sign out user whenever sign out button is clicked
+     */
     $(document).on("click", "#signOut", () => {
-        
         firebase.auth().signOut()
             .catch(function (error) {
                 console.log(error);
             });
     })
-
-    firebase.auth().onAuthStateChanged(user => {
-        console.log(user)
-        if(user)
-            signInResponse()
-        else 
-            signOutResponse();
-    })
-
 })
 
+/**
+ * Reveals the page and hides the sign in warning and shows the sign out button
+ */
 function signInResponse() {
     console.log("Signed in")
     $("#content").show();
@@ -57,10 +54,14 @@ function signInResponse() {
     $("#signOut").show();
 }
 
+/**
+ * Hides the page and reveals the sign in warning and shows the sign in button
+ */
 function signOutResponse()
 {
     console.log("Signed out")
     $("#content").hide();
+    // If the warning doesn't exist, make it, otherwise show it
     if ($("#warning").length == 0) 
         $("#content").before(
             `<h1 id = "warning" class = "text-center mt-3"> You must sign in to be able to use the app </h1>`);
