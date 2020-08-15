@@ -3,8 +3,7 @@
  * 
  * @return the current event being scoutted
  */
-async function getCurrentEvent()
-{
+async function getCurrentEvent() {
   return  $.get('/getCurrentEvent', (event) => {
         return event;
     })

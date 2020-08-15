@@ -5,8 +5,8 @@ const verification = require("./verification.js");
 var methods = {};
 
 /**
- * Returns the DocuementReference of the current event the app is set to
- * @return the DocuementReference of the current event the app is set to
+ * Returns the DocumentReference of the current event the app is set to
+ * @return the DocumentReference of the current event the app is set to
  */
 methods.getCurrentEvent = async function() {
     return db.collection("MetaData").doc("CurrentEvent").get()
@@ -22,11 +22,9 @@ methods.getCurrentEvent = async function() {
 app.get("/getCurrentEvent", (req, res) => {
     methods.getCurrentEvent()
     .then((event) => {
-        console.log("Got event query");
         return event.get();
     })
     .then((snap) => {
-        console.log("sending event");
         res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
         res.send(snap.data().name);
     })
