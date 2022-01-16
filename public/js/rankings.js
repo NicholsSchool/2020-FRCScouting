@@ -7,30 +7,30 @@ document.addEventListener("DOMContentLoaded", event => {
     /**
      * When clicked, toggles the option for having only certain amount of teams listed
      */
-    $("#num-teams-check").on("click", function() {
-        $(this).is(':checked') ? $("#ranking-num-teams-group").hide() 
-                                : $("#ranking-num-teams-group").show();
+    $("#num-teams-check").on("click", function () {
+        $(this).is(':checked') ? $("#ranking-num-teams-group").hide()
+            : $("#ranking-num-teams-group").show();
     })
 
     /**
      * When clicked, adds team and desired color to the highlight list and hightlights
      * all existing occurences of that team
      */
-    $("#highlight-btn").on("click", function() {
-        var team =  $("#highlight-team option:selected").text();
+    $("#highlight-btn").on("click", function () {
+        var team = $("#highlight-team option:selected").text();
 
-        if (isNaN( Number(team) )) // Do nothing if default option is selected
+        if (isNaN(Number(team))) // Do nothing if default option is selected
             return;
 
         $("#highlight-team option:selected").remove(); // Remove team from highlight options
-       
+
         // Store team and it's desired color to list 
         var style = [team, $("#highlight-color").val()];
         highlightedTeams.push(style)
 
         // Go through all existing rows and if the team number is there, highlight it
-        $("tr").each(function() {
-            if($(this).children().eq(1).text().trim() == team)
+        $("tr").each(function () {
+            if ($(this).children().eq(1).text().trim() == team)
                 $(this).css("background-color", style[1]);
         })
 
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", event => {
     /**
      * On click, deletes the card it is a part of
      */
-    $(document).on("click", ".delete-button", function() {
+    $(document).on("click", ".delete-button", function () {
         $("#ranking-select").append(`<option>${$(this).attr('data-choice')}</option>`)
         var queryId = $(this).parent().children().eq(0).attr('id');
         queries[queryId]();  //Removes updatable part 
@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", event => {
      * On click, removes the highlighted team it is next to from the list
      * and removes all occurences of it being highlight
      */
-    $(document).on("click", ".delete-highlight", function() {
+    $(document).on("click", ".delete-highlight", function () {
         var team = $(this).attr('data-team');
 
         // Goes through each occurance of highlight to remove it
@@ -75,8 +75,8 @@ document.addEventListener("DOMContentLoaded", event => {
         })
 
         // Remove the team from the list
-        for(i in highlightedTeams)
-            if(highlightedTeams[i][0] == team)
+        for (i in highlightedTeams)
+            if (highlightedTeams[i][0] == team)
                 highlightedTeams.splice(i, 1);
 
         $("#highlight-team").append(`<option>${team}</option>`); // Adds back team as a highlight option
@@ -88,20 +88,18 @@ document.addEventListener("DOMContentLoaded", event => {
 /**
  * Sets up each team as an option for being highlighted
  */
-function setUpTeams()
-{
+function setUpTeams() {
     getAllTeams()
-    .then((teams) => {
-        for(team of teams)
-            $("#highlight-team").append(`<option>${team}</option>`);
-    })
+        .then((teams) => {
+            for (team of teams)
+                $("#highlight-team").append(`<option>${team}</option>`);
+        })
 }
 
 /**
  * Sets up each task as an option for a possible ranked list 
  */
-function setUpOptions()
-{
+function setUpOptions() {
     getEmptyMatchData()
         .then((data) => {
             data = data.gamePlay;
@@ -121,17 +119,34 @@ function setUpOptions()
 
 /**
  * Sets the ranking table card for the currently selected task on the page
- */ 
-function setRankedTable()
-{
+ */
+function setRankedTable() {
     var choice = $("#ranking-select option:selected").text();
     $("#ranking-select option:selected").remove();
     var path = "averages." + choice.toLowerCase().replace(" ", ".");
-    if(choice == "Total Score")
+    if (choice == "Total Score")
         path = "averages.totalScore";
     var numTeams = !$("#num-teams-check").is(':checked') ? $("#ranking-num-teams").val() : 0;
     var isReversed = $("#reversed-check").is(':checked');
-    getUpdatableRankings(path, numTeams, isReversed, choice) // Makes the table update in real time
+    // getUpdatableRankings(path, numTeams, isReversed, choice) // Makes the table update in real time
+    makeRankedTable(path, numTeams, isReversed, choice);
+}
+
+/**
+ * Creates and displays a ranking card which does NOT update in real time
+ * (This is used because it is less reads than update table, so less likely for 
+ *  us to go over firebase limits)
+ * @param {String} path - the data storage path of the desired task
+ * @param {Number} numTeams - the number of teams to include in the list
+ * @param {Boolean} isReversed - true if the ranking should be reversed
+ * @param {String} choice - the task selected 
+ */
+function makeRankedTable(path, numTeams, isReversed, choice) {
+    getRankings(path, numTeams, isReversed)
+        .then(data => {
+            var table = makeTable(data, path);
+            $("#rankings").before(makeTableCard(choice, table));
+        })
 }
 
 /**
@@ -139,8 +154,7 @@ function setRankedTable()
  * @param {*} data - the ranked list of teams and their scores
  * @param {*} path - the data storage path of the task 
  */
-function makeTable(data, path)
-{
+function makeTable(data, path) {
     console.log(data);
     var table = `<div id = "${path}"><table class="table table-striped">
                         <thead>
@@ -169,7 +183,7 @@ function makeTable(data, path)
                             ${info[0]}
                             </a>
                         </td>
-                        <td>${info[1]}</td>
+                        <td>${Math.round(info[1] * 1000) / 1000}</td>
                         </tr>`
         i++;
     }
@@ -184,9 +198,8 @@ function makeTable(data, path)
  * @param {*} table - the ranked table of teams and their scores
  * @return the html for a ranking table card
  */
-function makeTableCard(choice, table)
-{
-  return ` <div class="card col-md-4">
+function makeTableCard(choice, table) {
+    return ` <div class="card col-md-4">
         <div class="card-header">
             <h4 class="text-center">${choice}</h4>
         </div>
@@ -202,14 +215,12 @@ function makeTableCard(choice, table)
  * ( Words must be seperated by "_" )
  * @param {String} str - String to capitalize
  */
-function capitalize(str)
-{
+function capitalize(str) {
     var words = str.split("_")
     var ret = "";
-    for(var i = 0; i < words.length; i++)
-    {
-       ret += words[i].charAt(0).toUpperCase() + words[i].slice(1);
-       if(i != words.length - 1)
+    for (var i = 0; i < words.length; i++) {
+        ret += words[i].charAt(0).toUpperCase() + words[i].slice(1);
+        if (i != words.length - 1)
             ret += "_"
     }
     return ret;

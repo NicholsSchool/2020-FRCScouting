@@ -1,12 +1,12 @@
 var currentEventKey;
 document.addEventListener("DOMContentLoaded", event => {
     $("#loading-options").hide();
-    $(".fa-check").each(function() {
+    $(".fa-check").each(function () {
         $(this).hide();
     })
-    $('#create-event-btn').on("click", function() {
+    $('#create-event-btn').on("click", function () {
         var event = $('#event-id').val();
-        if(event.length == 0)
+        if (event.length == 0)
             return;
         initalizeEvent(event);
     })
@@ -30,12 +30,11 @@ function initalizeEvent(eventKey) {
  * Sends the given filtered event data to the server to be stored
  * @param {JSON} eventData - filtered event data from the blue alliance
  */
-function createEvent(eventData)
-{
+function createEvent(eventData) {
     console.log("Creating Event")
     firebase.auth().currentUser.getIdToken(true)
         .then((idToken) => {
-        return $.ajax({
+            return $.ajax({
                 url: "/createEvent",
                 headers: { 'Authorization': idToken },
                 data: { "eventData": eventData, "key": currentEventKey },
@@ -55,12 +54,11 @@ function createEvent(eventData)
  * Sends the given filtered match data to the server to be stored
  * @param {JSON} matchData - filtered team data from the Blue Alliance
  */
-function createMatchesInEvent(matchData)
-{
+function createMatchesInEvent(matchData) {
     console.log("Creating Matches")
     firebase.auth().currentUser.getIdToken(true)
         .then((idToken) => {
-           return $.ajax({
+            return $.ajax({
                 url: "/createMatchesInEvent",
                 headers: { 'Authorization': idToken },
                 data: { "matchData": matchData, "key": currentEventKey },
@@ -81,8 +79,7 @@ function createMatchesInEvent(matchData)
  * Sends the given filtered team data to the server to be stored
  * @param {JSON} teamData - filtered team data from the Blue Alliance
  */
-function createTeamsInEvent(teamData)
-{
+function createTeamsInEvent(teamData) {
     console.log("Creating Teams");
     firebase.auth().currentUser.getIdToken(true)
         .then((idToken) => {
@@ -107,7 +104,7 @@ function createTeamsInEvent(teamData)
  * @param {String} eventKey - the Event Key of the desired event 
  *                          (Found in the Blue Alliance URL for the event)
  */
-function setCurrentEvent(eventKey) { 
+function setCurrentEvent(eventKey) {
     firebase.auth().currentUser.getIdToken(true)
         .then((idToken) => {
             return $.ajax({
@@ -130,8 +127,7 @@ function setCurrentEvent(eventKey) {
  * @param {JSON} response - the response from the blue alliance for match info in an event
  * @return an object containing each match and the alliances within each match
  */
-function filterMatches(response)
-{
+function filterMatches(response) {
     var matches = {};
     for (match of response) {
         if (match.comp_level != "qm")
@@ -155,7 +151,7 @@ function filterMatches(response)
  */
 function filterTeams(response) {
     var teams = [];
-    for (team of response) 
+    for (team of response)
         teams.push(team["team_number"]);
     return teams
 }
@@ -164,9 +160,8 @@ function filterTeams(response) {
  * @param {JSON} response - the event query response from Blue Alliace
  * @return the event key and event name from a Blue Alliance event query response
  */
-function filterEvent(response)
-{
-    return { "key": response.key, "name": response.name};
+function filterEvent(response) {
+    return { "key": response.key, "name": response.name };
 }
 
 /**
@@ -178,7 +173,14 @@ function filterEvent(response)
  * @param {Function} send - the function which sends the filtered data to the server
  */
 function setBlueAllianceData(urlSuffix, filter, send) {
-    $.get('/getBlueAllianceKey')
+    firebase.auth().currentUser.getIdToken(true)
+        .then(idToken => (
+            $.ajax({
+                url: "/getBlueAllianceKey",
+                headers: { 'Authorization': idToken },
+                method: 'GET',
+            })
+        ))
         .then(key => {
             //Make query request
             $.ajax({
@@ -189,10 +191,10 @@ function setBlueAllianceData(urlSuffix, filter, send) {
                 method: 'GET',
             })
                 .then((response) => {
-                   return filter(response); // Filter response
+                    return filter(response); // Filter response
                 })
-                .then((filteredData) =>{
-                    if(send) // Check if a send function was inputted
+                .then((filteredData) => {
+                    if (send) // Check if a send function was inputted
                         send(filteredData); // Send filtered data to server
                 })
                 .catch(err => {
