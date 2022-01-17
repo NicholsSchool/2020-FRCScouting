@@ -1,4 +1,5 @@
 var highlightedTeams = [];
+var allAverageData = []
 document.addEventListener("DOMContentLoaded", event => {
     setUpTeams();
     setUpOptions();
@@ -57,7 +58,8 @@ document.addEventListener("DOMContentLoaded", event => {
     $(document).on("click", ".delete-button", function () {
         $("#ranking-select").append(`<option>${$(this).attr('data-choice')}</option>`)
         var queryId = $(this).parent().children().eq(0).attr('id');
-        queries[queryId]();  //Removes updatable part 
+        if(queries[queryId])
+            queries[queryId]();  //Removes updatable part 
         $(this).parent().parent().remove();
     })
 
@@ -142,11 +144,42 @@ function setRankedTable() {
  * @param {String} choice - the task selected 
  */
 function makeRankedTable(path, numTeams, isReversed, choice) {
-    getRankings(path, numTeams, isReversed)
+    // getRankings(path, numTeams, isReversed)
+    getRankedData(path, numTeams, isReversed)
         .then(data => {
             var table = makeTable(data, path);
             $("#rankings").before(makeTableCard(choice, table));
         })
+}
+
+async function getRankedData(path, numTeams, isReversed) {
+
+    return getAllAverageData()
+        .then(avgs => {
+            allAverageData = avgs;
+            var rankedData = []
+            var i = 0;
+            var gamePeriod = path.split(".")[1];
+            var task = path.split(".")[2];
+            for (info of allAverageData) {
+                if (numTeams != 0 && i > numTeams)
+                    break;
+                rankedData.push([info[0], info[1][gamePeriod][task]]);
+                i++;
+            }
+            rankedData.sort((a, b) => {
+                if (isReversed)
+                    return a[1] - b[1];
+                return b[1] - a[1];
+            })
+            return rankedData;
+        })
+}
+
+async function getAllAverageData() {
+    if (allAverageData !== undefined && allAverageData.length != 0)
+        return allAverageData;
+    return getAllTeamData();
 }
 
 /**
